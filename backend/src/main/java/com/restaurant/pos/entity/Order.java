@@ -88,16 +88,16 @@ public class Order {
     public void setStatus(OrderStatus status) { this.status = status; }
 
     public BigDecimal getSubtotal() { return subtotal; }
-    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+    void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
 
     public BigDecimal getPromotionDiscount() { return promotionDiscount; }
-    public void setPromotionDiscount(BigDecimal promotionDiscount) { this.promotionDiscount = promotionDiscount; }
+    void setPromotionDiscount(BigDecimal promotionDiscount) { this.promotionDiscount = promotionDiscount; }
 
     public BigDecimal getPointDiscount() { return pointDiscount; }
-    public void setPointDiscount(BigDecimal pointDiscount) { this.pointDiscount = pointDiscount; }
+    void setPointDiscount(BigDecimal pointDiscount) { this.pointDiscount = pointDiscount; }
 
     public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
     public RestaurantTable getTable() { return table; }
     public void setTable(RestaurantTable table) { this.table = table; }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public interface OrderEventRepository extends JpaRepository<OrderEvent, OrderEve
 
     /** Deletes all OrderEvents for an order before re-persisting the recalculated set. */
     @Modifying
+    @Transactional
     @Query("DELETE FROM OrderEvent oe WHERE oe.order.id = :orderId")
     void deleteByOrderId(@Param("orderId") UUID orderId);
 }

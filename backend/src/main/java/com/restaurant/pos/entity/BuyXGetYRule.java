@@ -21,6 +21,14 @@ public class BuyXGetYRule extends PromotionRule {
     @Column(name = "free_quantity", nullable = false)
     private int freeQuantity;
 
+    /**
+     * Maximum number of times this rule's multiplier may fire on a single order.
+     * 0 means no cap (unlimited). E.g. buy2get1 with max_redemptions=2 means a customer
+     * ordering 10 of the required item still receives at most 2 free items, not 5.
+     */
+    @Column(name = "max_redemptions", nullable = false)
+    private int maxRedemptions = 0;
+
     public BuyXGetYRule() {}
 
     public MenuItem getRequiredItem() { return requiredItem; }
@@ -34,4 +42,7 @@ public class BuyXGetYRule extends PromotionRule {
 
     public int getFreeQuantity() { return freeQuantity; }
     public void setFreeQuantity(int freeQuantity) { this.freeQuantity = freeQuantity; }
+
+    public int getMaxRedemptions() { return maxRedemptions; }
+    public void setMaxRedemptions(int maxRedemptions) { this.maxRedemptions = maxRedemptions; }
 }

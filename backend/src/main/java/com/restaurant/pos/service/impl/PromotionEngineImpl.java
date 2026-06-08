@@ -54,7 +54,12 @@ public class PromotionEngineImpl implements PromotionEngine {
         // Scenario A: Evaluate the stackable pool (combine all stackable promotions)
         PromotionResult stackableResult = evaluatePromotionSet(order, baseSubtotal, stackablePromos);
 
-        // Scenario B: Evaluate each non-stackable promotion individually
+        // Scenario B: Evaluate each non-stackable promotion individually, then pick the
+        // option (A or B) that gives the customer the highest total benefit.
+        //
+        // IMPORTANT: totalDiscount already includes the retail price of complimentary/free
+        // items (GiftRule adds giftItem.price; BuyXGetY adds freeItem.price × freeQty).
+        // Therefore this comparison IS by total customer benefit, not raw cash discount alone.
         PromotionResult bestResult = stackableResult;
         for (EventPromotion nonStackable : nonStackablePromos) {
             List<EventPromotion> singlePromoList = List.of(nonStackable);
@@ -156,20 +161,24 @@ public class PromotionEngineImpl implements PromotionEngine {
                 } else if (rule instanceof BuyXGetYRule) {
                     BuyXGetYRule r = (BuyXGetYRule) rule;
                     int requiredQty = r.getRequiredQuantity();
-                    
-                    // Find count of required items in order
+
+                    // Count how many of the required item are in this order
                     int count = 0;
                     for (OrderItem item : order.getOrderItems()) {
                         if (!item.isPromotionalItem() && item.getMenuItem().getId().equals(r.getRequiredItem().getId())) {
                             count += item.getQuantity();
                         }
                     }
-                    
+
                     if (count >= requiredQty) {
                         int multiplier = count / requiredQty;
+                        // Apply maxRedemptions cap: 0 means no cap (unlimited multiplier).
+                        if (r.getMaxRedemptions() > 0) {
+                            multiplier = Math.min(multiplier, r.getMaxRedemptions());
+                        }
                         int freeQty = multiplier * r.getFreeQuantity();
                         BigDecimal freeItemPrice = r.getFreeItem().getPrice();
-                        
+
                         OrderItem freeItem = new OrderItem();
                         freeItem.setId(UUID.randomUUID());
                         freeItem.setOrder(order);
@@ -178,8 +187,11 @@ public class PromotionEngineImpl implements PromotionEngine {
                         freeItem.setUnitPrice(BigDecimal.ZERO);
                         freeItem.setSubtotal(BigDecimal.ZERO);
                         freeItem.setPromotionalItem(true);
-                        
+
                         complimentaryItems.add(freeItem);
+                        // Free items' retail value is added to promoDiscount so that
+                        // scenario comparison (stackable vs non-stackable) captures total
+                        // customer benefit, not cash discount alone.
                         promoDiscount = promoDiscount.add(freeItemPrice.multiply(BigDecimal.valueOf(freeQty)));
                     }
 

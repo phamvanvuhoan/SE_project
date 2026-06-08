@@ -18,9 +18,9 @@ public interface EventPromotionRepository extends JpaRepository<EventPromotion, 
     List<EventPromotion> findByCreatedById(UUID employeeId);
 
     /** Returns all active promotions valid at a given point in time (BR-05). */
-    @Query("SELECT e FROM EventPromotion e " +
+    @Query("SELECT DISTINCT e FROM EventPromotion e LEFT JOIN FETCH e.rules " +
            "WHERE e.isActive = true " +
-           "AND e.startDate <= :now " +
-           "AND e.endDate >= :now")
-    List<EventPromotion> findCurrentlyActive(@Param("now") LocalDateTime now);
+           "AND e.startDate <= :targetDate " +
+           "AND e.endDate >= :targetDate")
+    List<EventPromotion> findCurrentlyActive(@Param("targetDate") LocalDateTime targetDate);
 }
