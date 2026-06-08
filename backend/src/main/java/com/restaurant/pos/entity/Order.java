@@ -23,8 +23,17 @@ public class Order {
     @Column(name = "status", length = 20, nullable = false)
     private OrderStatus status;
 
+    @Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
+    private BigDecimal subtotal = BigDecimal.ZERO;
+
+    @Column(name = "promotion_discount", precision = 12, scale = 2, nullable = false)
+    private BigDecimal promotionDiscount = BigDecimal.ZERO;
+
+    @Column(name = "point_discount", precision = 12, scale = 2, nullable = false)
+    private BigDecimal pointDiscount = BigDecimal.ZERO;
+
     @Column(name = "total_amount", precision = 12, scale = 2, nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
@@ -65,6 +74,15 @@ public class Order {
 
     public OrderStatus getStatus() { return status; }
     public void setStatus(OrderStatus status) { this.status = status; }
+
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+
+    public BigDecimal getPromotionDiscount() { return promotionDiscount; }
+    public void setPromotionDiscount(BigDecimal promotionDiscount) { this.promotionDiscount = promotionDiscount; }
+
+    public BigDecimal getPointDiscount() { return pointDiscount; }
+    public void setPointDiscount(BigDecimal pointDiscount) { this.pointDiscount = pointDiscount; }
 
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }

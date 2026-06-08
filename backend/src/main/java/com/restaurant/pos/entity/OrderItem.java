@@ -30,15 +30,19 @@ public class OrderItem {
     @Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
     private BigDecimal subtotal;
 
+    @Column(name = "promotional_item", nullable = false)
+    private boolean promotionalItem = false;
+
     public OrderItem() {}
 
-    public OrderItem(UUID id, Order order, MenuItem menuItem, int quantity, BigDecimal unitPrice, BigDecimal subtotal) {
+    public OrderItem(UUID id, Order order, MenuItem menuItem, int quantity, BigDecimal unitPrice, BigDecimal subtotal, boolean promotionalItem) {
         this.id = id;
         this.order = order;
         this.menuItem = menuItem;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
         this.subtotal = subtotal;
+        this.promotionalItem = promotionalItem;
     }
 
     public UUID getId() { return id; }
@@ -58,6 +62,9 @@ public class OrderItem {
 
     public BigDecimal getSubtotal() { return subtotal; }
     public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+
+    public boolean isPromotionalItem() { return promotionalItem; }
+    public void setPromotionalItem(boolean promotionalItem) { this.promotionalItem = promotionalItem; }
 
     @Override
     public boolean equals(Object o) {

@@ -63,7 +63,10 @@ CREATE TABLE orders (
     order_id UUID PRIMARY KEY,
     order_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     status VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED', 'CANCELLED')),
-    total_amount DECIMAL(12,2) NOT NULL CHECK (total_amount >= 0),
+    subtotal DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (subtotal >= 0),
+    promotion_discount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (promotion_discount >= 0),
+    point_discount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (point_discount >= 0),
+    total_amount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (total_amount >= 0),
     table_id UUID REFERENCES tables(table_id),
     employee_id UUID NOT NULL REFERENCES employees(employee_id),
     customer_id UUID REFERENCES customers(customer_id),
@@ -78,7 +81,8 @@ CREATE TABLE order_items (
     dish_id UUID NOT NULL REFERENCES menu_items(dish_id),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(12,2) NOT NULL CHECK (unit_price >= 0),
-    subtotal DECIMAL(12,2) NOT NULL CHECK (subtotal >= 0)
+    subtotal DECIMAL(12,2) NOT NULL CHECK (subtotal >= 0),
+    promotional_item BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 -- 9. Event Promotions Table
@@ -91,6 +95,7 @@ CREATE TABLE event_promotions (
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    is_stackable BOOLEAN DEFAULT FALSE NOT NULL,
     created_by UUID REFERENCES employees(employee_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT chk_dates CHECK (start_date <= end_date)

@@ -37,6 +37,9 @@ public class EventPromotion {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "is_stackable", nullable = false)
+    private boolean isStackable = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private Employee createdBy;
@@ -72,6 +75,9 @@ public class EventPromotion {
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
+
+    public boolean isStackable() { return isStackable; }
+    public void setStackable(boolean stackable) { isStackable = stackable; }
 
     public Employee getCreatedBy() { return createdBy; }
     public void setCreatedBy(Employee createdBy) { this.createdBy = createdBy; }
