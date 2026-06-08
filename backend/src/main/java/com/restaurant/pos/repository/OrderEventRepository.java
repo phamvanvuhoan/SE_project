@@ -3,6 +3,9 @@ package com.restaurant.pos.repository;
 import com.restaurant.pos.entity.OrderEvent;
 import com.restaurant.pos.entity.OrderEventId;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,4 +17,9 @@ public interface OrderEventRepository extends JpaRepository<OrderEvent, OrderEve
     List<OrderEvent> findByOrderId(UUID orderId);
 
     List<OrderEvent> findByEventPromotionId(UUID eventId);
+
+    /** Deletes all OrderEvents for an order before re-persisting the recalculated set. */
+    @Modifying
+    @Query("DELETE FROM OrderEvent oe WHERE oe.order.id = :orderId")
+    void deleteByOrderId(@Param("orderId") UUID orderId);
 }

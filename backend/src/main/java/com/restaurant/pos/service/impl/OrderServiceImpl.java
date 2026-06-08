@@ -4,15 +4,19 @@ import com.restaurant.pos.entity.Employee;
 import com.restaurant.pos.entity.EventPromotion;
 import com.restaurant.pos.entity.MenuItem;
 import com.restaurant.pos.entity.Order;
+import com.restaurant.pos.entity.OrderEvent;
+import com.restaurant.pos.entity.OrderEventId;
 import com.restaurant.pos.entity.OrderItem;
 import com.restaurant.pos.entity.OrderStatus;
 import com.restaurant.pos.exception.BusinessRuleViolationException;
 import com.restaurant.pos.exception.InvalidOrderStateException;
 import com.restaurant.pos.exception.ResourceNotFoundException;
+import com.restaurant.pos.model.AppliedPromotion;
 import com.restaurant.pos.model.OrderCalculationResult;
 import com.restaurant.pos.repository.EmployeeRepository;
 import com.restaurant.pos.repository.EventPromotionRepository;
 import com.restaurant.pos.repository.MenuItemRepository;
+import com.restaurant.pos.repository.OrderEventRepository;
 import com.restaurant.pos.repository.OrderRepository;
 import com.restaurant.pos.service.OrderCalculationService;
 import com.restaurant.pos.service.OrderService;
@@ -32,17 +36,20 @@ public class OrderServiceImpl implements OrderService {
     private final MenuItemRepository menuItemRepository;
     private final EmployeeRepository employeeRepository;
     private final EventPromotionRepository eventPromotionRepository;
+    private final OrderEventRepository orderEventRepository;
     private final OrderCalculationService orderCalculationService;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             MenuItemRepository menuItemRepository,
                             EmployeeRepository employeeRepository,
                             EventPromotionRepository eventPromotionRepository,
+                            OrderEventRepository orderEventRepository,
                             OrderCalculationService orderCalculationService) {
         this.orderRepository = orderRepository;
         this.menuItemRepository = menuItemRepository;
         this.employeeRepository = employeeRepository;
         this.eventPromotionRepository = eventPromotionRepository;
+        this.orderEventRepository = orderEventRepository;
         this.orderCalculationService = orderCalculationService;
     }
 
@@ -219,7 +226,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPointDiscount(calcResult.getPointRedeemAmount());
         order.setTotalAmount(calcResult.getFinalPayableAmount());
 
-        // Update items list to match calculated items (adds the complimentary items)
+        // Manage complimentary items via the in-memory collection (owned, orphanRemoval=true)
         order.getOrderItems().removeIf(OrderItem::isPromotionalItem);
         for (OrderItem calcItem : calcResult.getCalculatedItems()) {
             if (calcItem.isPromotionalItem()) {
@@ -227,19 +234,23 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // Map and save OrderEvents
+        // Persist OrderEvents via repository directly.
+        // OrderEvent collection no longer has orphanRemoval=true, so we manage
+        // deletions explicitly to avoid the DELETE+re-INSERT hazard on every recalculation.
+        if (order.getId() != null) {
+            orderEventRepository.deleteByOrderId(order.getId());
+        }
         List<OrderEvent> orderEvents = new ArrayList<>();
         if (calcResult.getAppliedPromotions() != null) {
-            for (com.restaurant.pos.model.AppliedPromotion ap : calcResult.getAppliedPromotions()) {
-                OrderEvent oe = new OrderEvent();
-                oe.setId(new com.restaurant.pos.entity.OrderEventId(order.getId(), ap.getEventId()));
-                oe.setOrder(order);
-                oe.setEventPromotion(eventPromotionRepository.getReferenceById(ap.getEventId()));
-                oe.setDiscountAmount(ap.getDiscountAmount());
+            for (AppliedPromotion ap : calcResult.getAppliedPromotions()) {
+                OrderEvent oe = new OrderEvent(
+                        order,
+                        eventPromotionRepository.getReferenceById(ap.getEventId()),
+                        ap.getDiscountAmount()
+                );
                 orderEvents.add(oe);
             }
         }
-        order.getOrderEvents().clear();
-        order.getOrderEvents().addAll(orderEvents);
+        orderEventRepository.saveAll(orderEvents);
     }
 }

@@ -1,5 +1,6 @@
 package com.restaurant.pos.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.UUID;
 import java.util.Objects;
@@ -25,6 +26,7 @@ public class Employee {
     @Column(name = "username", length = 50, unique = true, nullable = false)
     private String username;
 
+    @JsonIgnore
     @Column(name = "password_hash", length = 255, nullable = false)
     private String passwordHash;
 

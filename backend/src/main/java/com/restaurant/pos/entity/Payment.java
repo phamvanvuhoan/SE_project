@@ -32,6 +32,11 @@ public class Payment {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    /** Optimistic locking: guards concurrent refund/complete status transitions. */
+    @Version
+    @Column(name = "version", nullable = false)
+    private int version = 0;
+
     public Payment() {}
 
     public Payment(UUID id, Order order, PaymentMethod paymentMethod, BigDecimal amount, PaymentStatus status, LocalDateTime paidAt) {
@@ -60,6 +65,8 @@ public class Payment {
 
     public LocalDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
+
+    public int getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {

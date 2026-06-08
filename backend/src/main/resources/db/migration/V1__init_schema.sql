@@ -67,9 +67,9 @@ CREATE TABLE orders (
     promotion_discount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (promotion_discount >= 0),
     point_discount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (point_discount >= 0),
     total_amount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (total_amount >= 0),
-    table_id UUID REFERENCES tables(table_id),
+    table_id UUID REFERENCES tables(table_id) ON DELETE SET NULL,
     employee_id UUID NOT NULL REFERENCES employees(employee_id),
-    customer_id UUID REFERENCES customers(customer_id),
+    customer_id UUID REFERENCES customers(customer_id) ON DELETE SET NULL,
     notes TEXT,
     version INTEGER DEFAULT 0 NOT NULL -- For optimistic locking
 );
@@ -91,12 +91,12 @@ CREATE TABLE event_promotions (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     event_type VARCHAR(20) NOT NULL CHECK (event_type IN ('DISCOUNT', 'PROMOTION')),
-    promotion_type VARCHAR(50) NOT NULL,
+    promotion_type VARCHAR(50) NOT NULL CHECK (promotion_type IN ('PERCENTAGE', 'FIXED', 'BUY_X_GET_Y', 'GIFT', 'CATEGORY')),
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
     is_stackable BOOLEAN DEFAULT FALSE NOT NULL,
-    created_by UUID REFERENCES employees(employee_id),
+    created_by UUID REFERENCES employees(employee_id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT chk_dates CHECK (start_date <= end_date)
 );
@@ -104,7 +104,7 @@ CREATE TABLE event_promotions (
 -- 10. Order Event Associative Table
 CREATE TABLE order_events (
     order_id UUID NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
-    event_id UUID NOT NULL REFERENCES event_promotions(event_id),
+    event_id UUID NOT NULL REFERENCES event_promotions(event_id) ON DELETE CASCADE,
     discount_amount DECIMAL(12,2) DEFAULT 0.00 NOT NULL CHECK (discount_amount >= 0),
     PRIMARY KEY (order_id, event_id)
 );
@@ -112,9 +112,9 @@ CREATE TABLE order_events (
 -- 11. Payments Table
 CREATE TABLE payments (
     payment_id UUID PRIMARY KEY,
-    order_id UUID NOT NULL REFERENCES orders(order_id),
+    order_id UUID NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
     payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('CASH', 'CARD', 'QR', 'POINTS')),
-    amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
+    amount DECIMAL(12,2) NOT NULL CHECK (amount > 0),
     status VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED')),
     paid_at TIMESTAMP
 );
@@ -167,6 +167,11 @@ CREATE TABLE category_discount_rules (
 -- Indexes for performance
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_customer ON orders(customer_id);
+CREATE INDEX idx_orders_employee ON orders(employee_id);
+CREATE INDEX idx_orders_table ON orders(table_id);
 CREATE INDEX idx_menu_items_category ON menu_items(category_id);
 CREATE INDEX idx_payments_order ON payments(order_id);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_method ON payments(payment_method);
 CREATE INDEX idx_promotion_rules_event ON promotion_rules(event_id);
+CREATE INDEX idx_event_promotions_active_dates ON event_promotions(is_active, start_date, end_date);

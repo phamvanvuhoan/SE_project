@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Objects;
 
+
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -17,7 +18,14 @@ public class Order {
     private UUID id;
 
     @Column(name = "order_time", nullable = false, updatable = false)
-    private LocalDateTime orderTime = LocalDateTime.now();
+    private LocalDateTime orderTime;
+
+    @PrePersist
+    private void prePersist() {
+        if (orderTime == null) {
+            orderTime = LocalDateTime.now();
+        }
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
@@ -58,10 +66,14 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    // orphanRemoval intentionally omitted: OrderEvents are managed explicitly to
+    // avoid spurious DELETE+INSERT on every recalculation. Use OrderEventRepository directly.
+    @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<OrderEvent> orderEvents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    // CascadeType.REMOVE intentionally omitted: Payment records are financial audit
+    // trails and must never be cascade-deleted via the Order aggregate.
+    @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Payment> payments = new ArrayList<>();
 
     public Order() {}

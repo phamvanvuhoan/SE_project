@@ -22,6 +22,12 @@ public abstract class PromotionRule {
     @Column(name = "rule_type", length = 50, nullable = false, insertable = false, updatable = false)
     private String ruleType;
 
+    /** Optimistic locking: prevents concurrent manager updates from silently overwriting
+     *  rule parameters (e.g. discount_percentage, minimum_order_amount). */
+    @Version
+    @Column(name = "version", nullable = false)
+    private int version = 0;
+
     public PromotionRule() {}
 
     public UUID getId() { return id; }
@@ -31,6 +37,8 @@ public abstract class PromotionRule {
     public void setEventPromotion(EventPromotion eventPromotion) { this.eventPromotion = eventPromotion; }
 
     public String getRuleType() { return ruleType; }
+
+    public int getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.Objects;
 
+
 @Entity
 @Table(name = "customers")
 public class Customer {
@@ -34,7 +35,20 @@ public class Customer {
     private BigDecimal totalSpent = BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    /** Optimistic locking: prevents concurrent payment processing from corrupting
+     *  totalPoints and totalSpent via lost-update anomalies. */
+    @Version
+    @Column(name = "version", nullable = false)
+    private int version = 0;
+
+    @PrePersist
+    private void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 
     public Customer() {}
 
@@ -112,6 +126,8 @@ public class Customer {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public int getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {
