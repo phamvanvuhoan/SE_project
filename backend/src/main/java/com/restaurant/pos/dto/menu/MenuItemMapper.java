@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 public interface MenuItemMapper {
 
     @Mapping(target = "name", source = "dishName")
-    @Mapping(target = "isActive", source = "isAvailable")
+    @Mapping(target = "isActive", source = "available")
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
     MenuItemResponse toResponse(MenuItem item);

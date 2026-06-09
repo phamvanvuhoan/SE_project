@@ -5,6 +5,6 @@ import java.time.LocalDate;
 
 public record DailyRevenueResponse(
         LocalDate date,
-        long orderCount,
+        Long orderCount,
         BigDecimal totalRevenue
 ) {}

@@ -67,7 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public void delete(UUID id) {
         Category category = findCategory(id);
-        if (!menuItemRepository.findByCategoryId(id).isEmpty()) {
+        if (menuItemRepository.existsByCategoryId(id)) {
             throw new BusinessRuleViolationException("Cannot delete category because menu items are assigned to it.");
         }
         categoryRepository.delete(category);

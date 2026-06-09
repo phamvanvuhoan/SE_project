@@ -14,6 +14,8 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
 
     List<MenuItem> findByCategoryId(UUID categoryId);
 
+    boolean existsByCategoryId(UUID categoryId);
+
     List<MenuItem> findByIsAvailableTrue();
 
     List<MenuItem> findByCategoryIdAndIsAvailableTrue(UUID categoryId);

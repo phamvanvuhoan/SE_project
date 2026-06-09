@@ -99,6 +99,16 @@ public class Order {
     public BigDecimal getTotalAmount() { return totalAmount; }
     void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
+    public void updateTotals(BigDecimal subtotal,
+                             BigDecimal promotionDiscount,
+                             BigDecimal pointDiscount,
+                             BigDecimal totalAmount) {
+        this.subtotal = requireNonNegative(subtotal, "subtotal");
+        this.promotionDiscount = requireNonNegative(promotionDiscount, "promotionDiscount");
+        this.pointDiscount = requireNonNegative(pointDiscount, "pointDiscount");
+        this.totalAmount = requireNonNegative(totalAmount, "totalAmount");
+    }
+
     public RestaurantTable getTable() { return table; }
     public void setTable(RestaurantTable table) { this.table = table; }
 
@@ -132,4 +142,12 @@ public class Order {
 
     @Override
     public int hashCode() { return Objects.hash(id); }
+
+    private BigDecimal requireNonNegative(BigDecimal value, String fieldName) {
+        Objects.requireNonNull(value, fieldName + " cannot be null");
+        if (value.signum() < 0) {
+            throw new IllegalArgumentException(fieldName + " cannot be negative");
+        }
+        return value;
+    }
 }

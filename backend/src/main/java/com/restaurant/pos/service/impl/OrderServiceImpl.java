@@ -221,10 +221,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void applyCalculationResult(Order order, OrderCalculationResult calcResult) {
-        order.setSubtotal(calcResult.getItemSubtotal());
-        order.setPromotionDiscount(calcResult.getEventDiscount());
-        order.setPointDiscount(calcResult.getPointRedeemAmount());
-        order.setTotalAmount(calcResult.getFinalPayableAmount());
+        order.updateTotals(
+                calcResult.getItemSubtotal(),
+                calcResult.getEventDiscount(),
+                calcResult.getPointRedeemAmount(),
+                calcResult.getFinalPayableAmount()
+        );
 
         // Manage complimentary items via the in-memory collection (owned, orphanRemoval=true)
         order.getOrderItems().removeIf(OrderItem::isPromotionalItem);
